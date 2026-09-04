@@ -46,11 +46,31 @@ def main() -> None:
         if failures:
             raise SystemExit(f"{failures} batch item(s) failed")
         return
-    _run(args.raster, args.points, args.output, args.fill, args.require_crs_match)
+    _run(
+        args.raster,
+        args.points,
+        args.output,
+        args.fill,
+        args.require_crs_match,
+        interpolation="nearest" if args.command == "mask" else "bilinear",
+    )
 
 
-def _run(raster_path: str, points_path: str, output: str, fill: float, require_crs_match: bool = False) -> None:
+def _run(
+    raster_path: str,
+    points_path: str,
+    output: str,
+    fill: float,
+    require_crs_match: bool = False,
+    interpolation: str = "bilinear",
+) -> None:
     points, metadata = load_points(points_path)
-    result = transfer(points, load_raster(raster_path), fill_value=fill, require_crs_match=require_crs_match)
+    result = transfer(
+        points,
+        load_raster(raster_path),
+        fill_value=fill,
+        require_crs_match=require_crs_match,
+        interpolation=interpolation,
+    )
     save_points(output, np.column_stack((points, result.values)), metadata)
     print(f"wrote {output}: {int(result.valid.sum())}/{len(points)} points sampled")
