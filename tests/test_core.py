@@ -8,9 +8,14 @@ def raster():
 
 
 def test_rgb_order_and_nodata():
-    result = transfer(np.array([[100.1, 199.9, 9], [102, 198, 8], [99, 200, 7]]), raster(), fill_value=-1)
+    result = transfer(np.array([[101, 199, 9], [103, 197, 8], [99, 200, 7]]), raster(), fill_value=-1)
     assert result.values.tolist() == [[10, 1], [-1, -1], [-1, -1]]
     assert result.valid.tolist() == [True, False, False]
+
+
+def test_baseline_bilinear_pixel_center_sampling():
+    result = transfer(np.array([[102, 198, 9]]), Raster(np.array([[0, 10], [20, 30]]), raster().transform))
+    assert result.values.tolist() == [[15.0]]
 
 
 def test_mask_and_alignment():

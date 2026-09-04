@@ -2,7 +2,7 @@
 
 Small, deterministic utilities for sampling georeferenced raster attributes onto corresponding 3D points. It is deliberately independent of machine-learning frameworks.
 
-The core operation inverse-transforms each point's `(x, y)` into raster pixel coordinates, chooses the nearest pixel, and appends its band values without changing point order. `z` and all existing attributes are untouched. `rgb` and `mask` are CLI names for the same operation; masks use nearest-neighbor integer sampling. Out-of-bounds and NoData samples are marked invalid and receive the configured fill value.
+The core operation follows the HyperPointFormer YEG3D baseline: reproject point XY coordinates, convert to pixel-center coordinates, bilinearly sample four neighbors, omit NoData neighbors, and renormalize their weights. `z` and all existing attributes are untouched. `rgb` and `mask` are CLI names for the same operation; masks use nearest-neighbor integer sampling. Out-of-bounds and NoData samples are marked invalid and receive the configured fill value.
 
 ## Install
 
