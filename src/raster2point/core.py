@@ -71,7 +71,11 @@ def _pixels(raster: Raster, points: np.ndarray) -> tuple[np.ndarray, np.ndarray]
     # Pixel centers own [integer - .5, integer + .5); nearest pixel is floor(u + .5).
     cols = np.floor(col_row[:, 0] + 0.5).astype(np.int64)
     rows = np.floor(col_row[:, 1] + 0.5).astype(np.int64)
-    valid = (cols >= 0) & (cols < raster.width) & (rows >= 0) & (rows < raster.height)
+    # Test the continuous coordinate before rounding so an outside point just
+    # beyond an edge cannot round back into the first/last pixel.
+    valid = (col_row[:, 0] >= 0) & (col_row[:, 0] < raster.width) & (col_row[:, 1] >= 0) & (col_row[:, 1] < raster.height)
+    cols = np.clip(cols, 0, raster.width - 1)
+    rows = np.clip(rows, 0, raster.height - 1)
     return np.column_stack((rows, cols)), valid
 
 
