@@ -18,6 +18,7 @@ def main() -> None:
         command.add_argument("raster")
         command.add_argument("points")
         command.add_argument("output")
+        command.add_argument("--output-type", choices=("npy", "csv", "ply"), help="output format; defaults to the output extension")
         command.add_argument("--fill", type=float, default=np.nan if name != "mask" else -1)
         command.add_argument("--require-crs-match", action="store_true")
     inspect = sub.add_parser("inspect")
@@ -53,6 +54,7 @@ def main() -> None:
         args.fill,
         args.require_crs_match,
         interpolation="nearest" if args.command == "mask" else "bilinear",
+        output_type=args.output_type,
     )
 
 
@@ -63,7 +65,10 @@ def _run(
     fill: float,
     require_crs_match: bool = False,
     interpolation: str = "bilinear",
+    output_type: str | None = None,
 ) -> None:
+    if output_type:
+        output = str(Path(output).with_suffix(f".{output_type}"))
     points, metadata = load_points(points_path)
     result = transfer(
         points,
