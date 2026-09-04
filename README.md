@@ -8,6 +8,7 @@ The core operation follows the HyperPointFormer YEG3D baseline: reproject point 
 
 ```bash
 python -m venv .venv && . .venv/bin/activate
+pip install -r requirements.txt
 pip install -e .
 ```
 
