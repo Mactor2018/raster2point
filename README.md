@@ -205,3 +205,22 @@ datasets.
 This repository is a focused utility rather than a full point-cloud processing
 pipeline. It does not create point clouds from a raster alone; a compatible
 3D point file is required as input.
+
+## Acknowledgment
+
+The raster-to-point projection approach was adapted from the coordinate and
+pixel-sampling strategy used in [HyperPointFormer](https://github.com/aldinorizaldy/hyperpointformer)
+by Aldino Rizaldy and collaborators. We thank the authors for making their
+research and implementation available. The related publication is:
+
+> A. Rizaldy, R. Gloaguen, F. E. Fassnacht, and P. Ghamisi, “HyperPointFormer:
+> Multimodal Fusion in 3-D Space With Dual-Branch Cross-Attention Transformers,”
+> *IEEE Journal of Selected Topics in Applied Earth Observations and Remote
+> Sensing*, vol. 18, pp. 21254–21274, 2025.
+
+See the [published paper](https://doi.org/10.1109/JSTARS.2025.3595648) and the
+[upstream repository](https://github.com/aldinorizaldy/hyperpointformer) for
+the original work. The upstream repository did not include an explicit license
+file when inspected on 2026-09-04; its code and other materials remain subject
+to the rights of their original authors. This repository's MIT license applies
+only to the original contents of `raster2point`.
