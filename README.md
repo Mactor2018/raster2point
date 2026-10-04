@@ -16,7 +16,7 @@ columns.
 - RGB, multispectral, continuous, and integer-valued rasters.
 - Semantic masks with nearest-neighbor sampling.
 - Point inputs in `.npy`, `.npz`, `.csv`, and ASCII `.ply` formats.
-- Point outputs in `.npy`, `.csv`, and ASCII `.ply` formats.
+- Point outputs in `.npy`, `.npz`, `.csv`, and ASCII `.ply` formats.
 - Optional reprojection of point coordinates when a point CRS is supplied
   through the Python API.
 - Alignment inspection before transfer.
@@ -75,7 +75,16 @@ survey-level registration.
 
 `rgb` and `transfer` use bilinear interpolation. The four neighboring pixels
 are weighted by distance. NoData neighbors are omitted and the remaining
-weights are renormalized.
+weights are renormalized, so points in the half-pixel border inside the raster
+edge are still sampled from the neighbors that exist. A NoData neighbor means
+one equal to the raster's declared NoData value or one that is non-finite,
+which covers the `NaN` NoData that float rasters commonly declare.
+
+Sampling stops at the raster footprint. A point outside it receives the fill
+value and is reported invalid, even when it lies within one pixel of the edge
+and a single bilinear corner would still be in bounds. The `points_inside`
+count from `inspect` therefore matches the number of points that can be
+sampled.
 
 ```bash
 raster2point rgb ortho.tif points.npy points_rgb.npy
@@ -84,7 +93,11 @@ raster2point transfer ortho.tif points.ply points_rgb.ply
 
 ### Transfer a semantic mask
 
-`mask` uses nearest-neighbor sampling so class IDs remain integer values:
+`mask` uses nearest-neighbor sampling, so class IDs are never blended into
+intermediate values. `transfer_mask` in the Python API also returns an integer
+array when the mask and fill value are both integral, which keeps large class
+IDs exact; CLI output is written alongside float `x/y/z` columns and is
+therefore float-typed:
 
 ```bash
 raster2point mask road_mask.tif points.npy points_road.npy --fill -1
@@ -107,11 +120,14 @@ raster2point rgb ortho.tif points.npy result --output-type ply
 ```
 
 These commands write `result.npy`, `result.csv`, and `result.ply`, respectively.
-Supported values are `npy`, `csv`, and `ply`.
+Supported values are `npy`, `npz`, `csv`, and `ply`.
 
-CSV output is numeric and comma-delimited. PLY output is ASCII and contains
-one `float` property for each output column. The PLY reader currently accepts
-ASCII PLY only; binary PLY files should be converted to ASCII or NumPy first.
+CSV output is numeric, comma-delimited, and written without a header row. The
+CSV reader accepts both forms: a leading row is skipped only when it is not
+numeric, so a written CSV reads back with every point intact. PLY output is
+ASCII and contains one `float` property for each output column. The PLY reader
+currently accepts ASCII PLY only; binary PLY files should be converted to ASCII
+or NumPy first.
 
 ### Process multiple pairs
 
@@ -133,6 +149,11 @@ raster2point batch pairs.csv --overwrite
 Existing outputs are skipped unless `--overwrite` is supplied. Every row is
 attempted; failures are reported and the command exits unsuccessfully if any
 row fails. Batch output formats are inferred from each output filename.
+
+The manifest carries no per-row sampler, so every batch row uses bilinear
+interpolation with a `NaN` fill, as `transfer` does. Semantic masks must not be
+run through `batch`: bilinear interpolation blends neighboring class IDs into
+meaningless intermediate values. Use the `mask` command for masks.
 
 ## Python API
 
@@ -196,9 +217,10 @@ python -m pytest
 ```
 
 The tests cover affine pixel lookup, bilinear RGB transfer, nearest-neighbor
-mask transfer, NoData handling, CRS and bounds reporting, outside points, and
-point-order preservation. Tests use synthetic data and do not modify source
-datasets.
+mask transfer, NoData handling (sentinel and `NaN`), CRS and bounds reporting,
+outside points and footprint edges, integer label preservation, CSV round
+trips, empty and non-finite input, and point-order preservation. Tests use
+synthetic data and do not modify source datasets.
 
 ## License and project status
 

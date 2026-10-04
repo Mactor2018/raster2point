@@ -18,7 +18,7 @@ def main() -> None:
         command.add_argument("raster")
         command.add_argument("points")
         command.add_argument("output")
-        command.add_argument("--output-type", choices=("npy", "csv", "ply"), help="output format; defaults to the output extension")
+        command.add_argument("--output-type", choices=("npy", "npz", "csv", "ply"), help="output format; defaults to the output extension")
         command.add_argument("--fill", type=float, default=np.nan if name != "mask" else -1)
         command.add_argument("--require-crs-match", action="store_true")
     inspect = sub.add_parser("inspect")
